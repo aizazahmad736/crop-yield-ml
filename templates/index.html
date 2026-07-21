@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriMind AI - Crop Yield & Suitability Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Header -->
+        <header class="navbar">
+            <div class="logo">
+                <span class="logo-icon">🌿</span>
+                <div class="logo-text">
+                    <h1>AgriMind <span class="badge">ML 1.0</span></h1>
+                    <p>Machine Learning Crop Yield & Soil Recommender</p>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>Random Forest Engine Active</span>
+            </div>
+        </header>
+
+        <!-- Main Content Grid -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: Form Inputs -->
+            <section class="card input-card">
+                <div class="card-header">
+                    <h2>Input Parameters</h2>
+                    <p>Specify soil nutrients & climate metrics or pick a preset.</p>
+                </div>
+
+                <!-- Presets -->
+                <div class="presets-bar">
+                    <span class="preset-label">Quick Presets:</span>
+                    <button type="button" class="preset-btn" onclick="applyPreset('coastal')">🏖️ Coastal / Rice</button>
+                    <button type="button" class="preset-btn" onclick="applyPreset('arid')">🌵 Arid / Cotton</button>
+                    <button type="button" class="preset-btn" onclick="applyPreset('highland')">⛰️ Highland / Coffee</button>
+                </div>
+
+                <form id="prediction-form" class="form-grid">
+                    <div class="section-title">🧪 Soil Nutrients (mg/kg)</div>
+                    <div class="input-group">
+                        <label for="N">Nitrogen (N): <span id="N-val" class="val-tag">90</span></label>
+                        <input type="range" id="N" min="0" max="140" value="90" oninput="updateVal('N')">
+                    </div>
+                    <div class="input-group">
+                        <label for="P">Phosphorus (P): <span id="P-val" class="val-tag">45</span></label>
+                        <input type="range" id="P" min="5" max="145" value="45" oninput="updateVal('P')">
+                    </div>
+                    <div class="input-group">
+                        <label for="K">Potassium (K): <span id="K-val" class="val-tag">40</span></label>
+                        <input type="range" id="K" min="5" max="205" value="40" oninput="updateVal('K')">
+                    </div>
+                    <div class="input-group">
+                        <label for="ph">Soil pH: <span id="ph-val" class="val-tag">6.5</span></label>
+                        <input type="range" id="ph" min="3.5" max="10.0" step="0.1" value="6.5" oninput="updateVal('ph')">
+                    </div>
+
+                    <div class="section-title">🌤️ Climate & Weather</div>
+                    <div class="input-group">
+                        <label for="temperature">Temperature (°C): <span id="temperature-val" class="val-tag">25</span></label>
+                        <input type="range" id="temperature" min="5" max="45" value="25" oninput="updateVal('temperature')">
+                    </div>
+                    <div class="input-group">
+                        <label for="humidity">Humidity (%): <span id="humidity-val" class="val-tag">82</span></label>
+                        <input type="range" id="humidity" min="15" max="100" value="82" oninput="updateVal('humidity')">
+                    </div>
+                    <div class="input-group">
+                        <label for="rainfall">Annual Rainfall (mm): <span id="rainfall-val" class="val-tag">220</span></label>
+                        <input type="range" id="rainfall" min="20" max="300" value="220" oninput="updateVal('rainfall')">
+                    </div>
+
+                    <button type="submit" class="submit-btn">
+                        <span>Predict Optimal Crop</span>
+                        <span class="btn-icon">⚡</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Right Panel: Results & Analytics -->
+            <section class="results-panel">
+                <!-- Main Prediction Output -->
+                <div class="card primary-result-card" id="result-hero">
+                    <div class="hero-placeholder">
+                        <div class="placeholder-icon">🌾</div>
+                        <h3>Ready for Prediction</h3>
+                        <p>Adjust soil and climate sliders on the left, then click <strong>Predict Optimal Crop</strong>.</p>
+                    </div>
+                    <div class="hero-content hidden" id="hero-content">
+                        <div class="hero-header">
+                            <span class="badge-recommend">Top Recommendation</span>
+                            <span class="confidence-pill" id="hero-confidence">98.4% Confidence</span>
+                        </div>
+                        <div class="hero-main">
+                            <span class="hero-emoji" id="hero-icon">🌾</span>
+                            <div>
+                                <h1 id="hero-crop-name">Rice</h1>
+                                <p id="hero-crop-desc">Optimal soil & climatic match detected.</p>
+                            </div>
+                        </div>
+                        <div class="crop-meta-grid">
+                            <div class="meta-box">
+                                <span class="meta-title">Category</span>
+                                <span class="meta-value" id="meta-category">Cereal</span>
+                            </div>
+                            <div class="meta-box">
+                                <span class="meta-title">Season</span>
+                                <span class="meta-value" id="meta-season">Kharif</span>
+                            </div>
+                            <div class="meta-box">
+                                <span class="meta-title">Water Req.</span>
+                                <span class="meta-value" id="meta-water">High</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Top Recommendations & Feature Importance Chart -->
+                <div class="secondary-grid">
+                    <div class="card chart-card">
+                        <h3>Alternative Crop Rankings</h3>
+                        <div class="rankings-list" id="rankings-list">
+                            <p class="subtle-text">Run a prediction to view top 4 recommendations.</p>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <h3>Model Feature Importances</h3>
+                        <canvas id="importanceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
