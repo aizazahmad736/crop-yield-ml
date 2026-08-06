@@ -10,6 +10,8 @@ A complete Machine Learning application that recommends optimal crop types based
 
 <img width="953" height="446" alt="Screenshot 2026-07-21 155238" src="https://github.com/user-attachments/assets/c16ab639-47ec-4a40-86f2-4074f0d539b8" />
 
+<img width="923" height="402" alt="Screenshot 2026-07-21 155252" src="https://github.com/user-attachments/assets/911eeb15-8cf3-4182-b751-09bcf5e7bc31" />
+
 ## 🛠️ Project Structure
 ```text
 crop-yield-ml/
