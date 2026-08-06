@@ -8,6 +8,8 @@ A complete Machine Learning application that recommends optimal crop types based
 - **REST API**: Flask backend providing real-time crop suitability predictions and confidence scores.
 - **Interactive UI**: Glassmorphism web interface with parameter sliders, soil presets, and real-time Chart.js visualizers.
 
+<img width="953" height="446" alt="Screenshot 2026-07-21 155238" src="https://github.com/user-attachments/assets/c16ab639-47ec-4a40-86f2-4074f0d539b8" />
+
 ## 🛠️ Project Structure
 ```text
 crop-yield-ml/
