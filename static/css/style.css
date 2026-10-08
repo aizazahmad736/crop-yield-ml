@@ -190,6 +190,12 @@ body {
     border-color: var(--accent-green);
 }
 
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #34d399;
+    outline-offset: 3px;
+}
+
 /* Form Controls */
 .section-title {
     font-size: 0.85rem;
@@ -246,6 +252,43 @@ input[type="range"] {
 .submit-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.submit-btn:disabled,
+.clear-history-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+}
+
+.form-disclaimer,
+.model-note {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.form-disclaimer {
+    margin-top: 0.5rem;
+}
+
+.feedback-message {
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    padding: 0.65rem 0.8rem;
+}
+
+.error-message {
+    color: #fecaca;
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+.warning-message {
+    color: #fde68a;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.35);
 }
 
 /* Results Panel */
@@ -419,6 +462,17 @@ input[type="range"] {
     border-radius: 3px;
 }
 
+.rank-score-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.rank-score {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
 .subtle-text {
     font-size: 0.85rem;
     color: var(--text-muted);
@@ -441,6 +495,17 @@ input[type="range"] {
 .history-header h3 {
     font-family: var(--font-heading);
     font-size: 1rem;
+}
+
+.history-hint {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.history-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .clear-history-btn {
@@ -490,3 +555,129 @@ input[type="range"] {
     color: var(--accent-green);
 }
 
+.model-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.model-card-heading h3 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.model-card-heading p {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.model-algorithm {
+    color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.65rem;
+    white-space: nowrap;
+}
+
+.model-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+}
+
+.metric-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.metric-value,
+.metric-label {
+    display: block;
+}
+
+.metric-value {
+    color: var(--text-main);
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.metric-label {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
+}
+
+.model-note {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.75rem;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 0.75rem;
+    }
+
+    .navbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .status-indicator {
+        font-size: 0.75rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .model-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .model-card-heading {
+        flex-direction: column;
+    }
+
+    .hero-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .hero-main h1 {
+        font-size: 1.7rem;
+    }
+
+    .hero-emoji {
+        font-size: 3rem;
+        padding: 0.4rem 0.7rem;
+    }
+
+    .history-item {
+        align-items: flex-start;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

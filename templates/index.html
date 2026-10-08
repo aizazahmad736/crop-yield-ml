@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriMind AI - Crop Yield & Suitability Predictor</title>
+    <title>AgriMind AI - Crop Suitability Advisor</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -16,7 +16,7 @@
                 <span class="logo-icon">🌿</span>
                 <div class="logo-text">
                     <h1>AgriMind <span class="badge">ML 1.0</span></h1>
-                    <p>Machine Learning Crop Yield & Soil Recommender</p>
+                    <p>Soil & climate-based crop suitability</p>
                 </div>
             </div>
             <div class="status-indicator" id="status-indicator">
@@ -31,7 +31,7 @@
             <section class="card input-card">
                 <div class="card-header">
                     <h2>Input Parameters</h2>
-                    <p>Specify soil nutrients & climate metrics or pick a preset.</p>
+                    <p>Enter measured soil and climate values, or start with a preset.</p>
                 </div>
 
                 <!-- Presets -->
@@ -64,20 +64,22 @@
                     <div class="section-title">🌤️ Climate & Weather</div>
                     <div class="input-group">
                         <label for="temperature">Temperature (°C): <span id="temperature-val" class="val-tag">25</span></label>
-                        <input type="range" id="temperature" min="5" max="45" value="25" oninput="updateVal('temperature')">
+                        <input type="range" id="temperature" min="8" max="45" value="25" oninput="updateVal('temperature')">
                     </div>
                     <div class="input-group">
                         <label for="humidity">Humidity (%): <span id="humidity-val" class="val-tag">82</span></label>
-                        <input type="range" id="humidity" min="15" max="100" value="82" oninput="updateVal('humidity')">
+                        <input type="range" id="humidity" min="14" max="100" value="82" oninput="updateVal('humidity')">
                     </div>
                     <div class="input-group">
                         <label for="rainfall">Annual Rainfall (mm): <span id="rainfall-val" class="val-tag">220</span></label>
                         <input type="range" id="rainfall" min="20" max="300" value="220" oninput="updateVal('rainfall')">
                     </div>
 
-                    <button type="submit" class="submit-btn">
-                        <span>Predict Optimal Crop</span>
-                        <span class="btn-icon">⚡</span>
+                    <p class="form-disclaimer">Recommendations are model estimates based on this project's generated training data, not a guarantee of yield.</p>
+                    <p id="prediction-error" class="feedback-message error-message hidden" role="alert" aria-live="polite"></p>
+                    <button type="submit" class="submit-btn" id="predict-button">
+                        <span id="predict-button-label">Find Suitable Crops</span>
+                        <span class="btn-icon" aria-hidden="true">⚡</span>
                     </button>
                 </form>
             </section>
@@ -89,18 +91,18 @@
                     <div class="hero-placeholder">
                         <div class="placeholder-icon">🌾</div>
                         <h3>Ready for Prediction</h3>
-                        <p>Adjust soil and climate sliders on the left, then click <strong>Predict Optimal Crop</strong>.</p>
+                        <p>Adjust soil and climate sliders on the left, then click <strong>Find Suitable Crops</strong>.</p>
                     </div>
                     <div class="hero-content hidden" id="hero-content">
                         <div class="hero-header">
-                            <span class="badge-recommend">Top Recommendation</span>
-                            <span class="confidence-pill" id="hero-confidence">98.4% Confidence</span>
+                            <span class="badge-recommend">Top Suitability Match</span>
+                            <span class="confidence-pill" id="hero-confidence">Model score</span>
                         </div>
                         <div class="hero-main">
                             <span class="hero-emoji" id="hero-icon">🌾</span>
                             <div>
                                 <h1 id="hero-crop-name">Rice</h1>
-                                <p id="hero-crop-desc">Optimal soil & climatic match detected.</p>
+                                <p id="hero-crop-desc">A model-ranked option for the supplied conditions.</p>
                             </div>
                         </div>
                         <div class="crop-meta-grid">
@@ -123,7 +125,7 @@
                 <!-- Secondary Top Recommendations & Feature Importance Chart -->
                 <div class="secondary-grid">
                     <div class="card chart-card">
-                        <h3>Alternative Crop Rankings</h3>
+                        <h3>Top-ranked Crop Options</h3>
                         <div class="rankings-list" id="rankings-list">
                             <p class="subtle-text">Run a prediction to view top 4 recommendations.</p>
                         </div>
@@ -131,14 +133,50 @@
 
                     <div class="card chart-card">
                         <h3>Model Feature Importances</h3>
-                        <canvas id="importanceChart"></canvas>
+                        <canvas id="importanceChart" role="img" aria-label="Chart showing the relative importance of each soil and climate input"></canvas>
+                        <p class="model-note">Relative model importance is not a causal explanation.</p>
                     </div>
+                </div>
+
+                <div class="card model-card">
+                    <div class="model-card-heading">
+                        <div>
+                            <h3>Model evaluation</h3>
+                            <p>Held-out test-set performance from the latest training run.</p>
+                        </div>
+                        <span id="model-algorithm" class="model-algorithm">Loading model…</span>
+                    </div>
+                    <div class="model-metrics" id="model-metrics" aria-live="polite">
+                        <div class="metric-box">
+                            <span class="metric-value" id="metric-accuracy">—</span>
+                            <span class="metric-label">Accuracy</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value" id="metric-f1">—</span>
+                            <span class="metric-label">Macro F1</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value" id="metric-test-size">—</span>
+                            <span class="metric-label">Test samples</span>
+                        </div>
+                        <div class="metric-box">
+                            <span class="metric-value" id="metric-crop-count">—</span>
+                            <span class="metric-label">Crop classes</span>
+                        </div>
+                    </div>
+                    <p class="model-note" id="model-note">Model scores are not calibrated probabilities. Validate recommendations with local agronomic guidance.</p>
                 </div>
 
                 <div class="card history-card">
                     <div class="history-header">
-                        <h3>Recent Predictions</h3>
-                        <button type="button" id="clear-history" class="clear-history-btn">Clear</button>
+                        <div>
+                            <h3>Recent Predictions</h3>
+                            <p class="history-hint">Saved only in this browser. Export or clear them any time.</p>
+                        </div>
+                        <div class="history-actions">
+                            <button type="button" id="export-history" class="clear-history-btn" disabled>Export CSV</button>
+                            <button type="button" id="clear-history" class="clear-history-btn">Clear</button>
+                        </div>
                     </div>
                     <div class="history-list" id="history-list">
                         <p class="subtle-text">Your recent recommendations will appear here.</p>
