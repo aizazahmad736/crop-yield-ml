@@ -34,8 +34,13 @@ crop-yield-ml/
 ```
 
 ## 🧪 How to Run
-1. Run the Flask Server:
+1. If the trained model files do not exist yet, generate them:
+```bash
+python train_model.py
+```
+2. Run the Flask Server:
 ```bash
 python app.py
 ```
-2. Open your browser and navigate to: `http://127.0.0.1:5000`
+3. Open your browser and navigate to: `http://127.0.0.1:5000`
+4. Optional health check: `http://127.0.0.1:5000/health`

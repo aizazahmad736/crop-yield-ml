@@ -1,4 +1,5 @@
 let importanceChartInstance = null;
+const HISTORY_KEY = 'agriMindPredictionHistory';
 
 function updateVal(id) {
     const val = document.getElementById(id).value;
@@ -19,6 +20,75 @@ function applyPreset(type) {
             updateVal(key);
         }
     }
+}
+
+async function updateSystemStatus() {
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+
+    try {
+        const res = await fetch('/health');
+        const data = await res.json();
+
+        if (data.status === 'ok') {
+            statusIndicator.classList.remove('warning', 'error');
+            statusText.textContent = 'Random Forest Engine Active';
+            return;
+        }
+
+        statusIndicator.classList.add('warning');
+        statusText.textContent = 'Model setup required';
+    } catch (err) {
+        statusIndicator.classList.add('error');
+        statusText.textContent = 'Backend offline';
+    }
+}
+
+function getHistory() {
+    try {
+        const saved = localStorage.getItem(HISTORY_KEY);
+        return saved ? JSON.parse(saved) : [];
+    } catch (err) {
+        return [];
+    }
+}
+
+function saveHistory(entry) {
+    const history = getHistory();
+    const nextHistory = [entry].concat(history).slice(0, 5);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(nextHistory));
+    renderHistory();
+}
+
+function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+}
+
+function renderHistory() {
+    const listContainer = document.getElementById('history-list');
+    const history = getHistory();
+
+    if (!history.length) {
+        listContainer.innerHTML = '<p class="subtle-text">Your recent recommendations will appear here.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = history.map((item) => `
+        <div class="history-item">
+            <div class="history-crop">
+                <strong>${item.crop}</strong>
+                <span>${item.category} • ${item.time}</span>
+            </div>
+            <div class="history-score">${item.confidence}%</div>
+        </div>
+    `).join('');
+}
+
+function summarizeRecommendation(top, payload) {
+    const rainFactor = Number(payload.rainfall) > 180 ? 'water-rich' : 'moderate water';
+    const climateFactor = Number(payload.temperature) >= 25 && Number(payload.humidity) >= 60 ? 'warm and humid' : 'balanced conditions';
+    return `${top.name} is a strong fit for ${climateFactor} growing conditions with ${rainFactor}.`;
 }
 
 document.getElementById('prediction-form').addEventListener('submit', async function(e) {
@@ -44,7 +114,13 @@ document.getElementById('prediction-form').addEventListener('submit', async func
         const data = await res.json();
 
         if (data.success) {
-            renderResults(data);
+            renderResults(data, payload);
+            saveHistory({
+                crop: data.top_recommendations[0].name,
+                category: data.top_recommendations[0].category,
+                confidence: data.top_recommendations[0].confidence,
+                time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+            });
         } else {
             alert('Error making prediction: ' + data.error);
         }
@@ -54,8 +130,9 @@ document.getElementById('prediction-form').addEventListener('submit', async func
     }
 });
 
-function renderResults(data) {
-    // Reveal Hero Card
+document.getElementById('clear-history').addEventListener('click', clearHistory);
+
+function renderResults(data, payload = null) {
     document.querySelector('.hero-placeholder').classList.add('hidden');
     document.getElementById('hero-content').classList.remove('hidden');
 
@@ -67,11 +144,14 @@ function renderResults(data) {
     document.getElementById('meta-season').innerText = top.season;
     document.getElementById('meta-water').innerText = top.water;
 
-    // Render Rankings List
+    if (payload) {
+        document.getElementById('hero-crop-desc').innerText = summarizeRecommendation(top, payload);
+    }
+
     const listContainer = document.getElementById('rankings-list');
     listContainer.innerHTML = '';
 
-    data.top_recommendations.forEach((item, index) => {
+    data.top_recommendations.forEach((item) => {
         const row = document.createElement('div');
         row.className = 'ranking-item';
         row.innerHTML = `
@@ -89,7 +169,6 @@ function renderResults(data) {
         listContainer.appendChild(row);
     });
 
-    // Render Chart
     renderChart(data.feature_importance);
 }
 
@@ -128,3 +207,6 @@ function renderChart(importances) {
         }
     });
 }
+
+updateSystemStatus();
+renderHistory();

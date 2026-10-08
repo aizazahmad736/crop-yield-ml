@@ -19,9 +19,9 @@
                     <p>Machine Learning Crop Yield & Soil Recommender</p>
                 </div>
             </div>
-            <div class="status-indicator">
+            <div class="status-indicator" id="status-indicator">
                 <span class="pulse-dot"></span>
-                <span>Random Forest Engine Active</span>
+                <span id="status-text">Checking model status…</span>
             </div>
         </header>
 
@@ -132,6 +132,16 @@
                     <div class="card chart-card">
                         <h3>Model Feature Importances</h3>
                         <canvas id="importanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card history-card">
+                    <div class="history-header">
+                        <h3>Recent Predictions</h3>
+                        <button type="button" id="clear-history" class="clear-history-btn">Clear</button>
+                    </div>
+                    <div class="history-list" id="history-list">
+                        <p class="subtle-text">Your recent recommendations will appear here.</p>
                     </div>
                 </div>
             </section>
